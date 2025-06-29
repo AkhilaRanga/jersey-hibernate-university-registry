@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Eclipse
+/backend/.classpath
+/backend/.project
+/backend/.settings/
+
+# Maven
+/backend/target/
+/backend/.mvn/
+
