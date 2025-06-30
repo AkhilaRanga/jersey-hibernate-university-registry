@@ -1,0 +1,241 @@
+openapi: 3.0.1
+info:
+  title: University registry
+  description: Swagger API for Jersey + Hibernate java application
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  /department:
+    get:
+      tags:
+      - Department
+      summary: Get all departments
+      description: Get list of departments in the university registry
+      operationId: getAllDepartments
+      responses:
+        "200":
+          description: List of departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DepartmentDto"
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DepartmentDto"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags:
+      - Department
+      summary: Create a new department
+      description: Create a department in the university registry
+      operationId: createDepartment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepartmentDto"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/DepartmentDto"
+        required: true
+      responses:
+        "201":
+          description: Department created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepartmentDto"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/DepartmentDto"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /department/{id}:
+    put:
+      tags:
+      - Department
+      summary: Update an existing department
+      description: Update a department in the university registry
+      operationId: updateDepartment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepartmentDto"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/DepartmentDto"
+        required: true
+      responses:
+        "200":
+          description: Department updated
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags:
+      - Department
+      summary: Delete a department
+      description: Delete a department in the university registry
+      operationId: deleteDepartment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "204":
+          description: Department deleted
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /department/id/{id}:
+    get:
+      tags:
+      - Department
+      summary: Get department
+      description: Get a department from the university registry by id
+      operationId: getDepartmentById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Department found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepartmentDto"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/DepartmentDto"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /department/code/{code}:
+    get:
+      tags:
+      - Department
+      summary: Get department
+      description: Get a department from the university registry by code
+      operationId: getDepartmentByCode
+      parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Department found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepartmentDto"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/DepartmentDto"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+components:
+  schemas:
+    DepartmentDto:
+      required:
+      - departmentCode
+      - departmentName
+      type: object
+      properties:
+        departmentId:
+          type: integer
+          format: int32
+        departmentCode:
+          maxLength: 10
+          minLength: 0
+          type: string
+        departmentName:
+          maxLength: 100
+          minLength: 0
+          type: string
+    Error:
+      required:
+      - code
+      - message
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalServerError:
+      description: Unexpected server failure
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/Error"

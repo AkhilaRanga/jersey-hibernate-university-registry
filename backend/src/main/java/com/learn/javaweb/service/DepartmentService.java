@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityExistsException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
@@ -27,7 +28,7 @@ public class DepartmentService {
         validateDto(departmentDto);
         Department department = departmentDao.findByCode(departmentDto.getDepartmentCode());
         if (department != null) {
-            throw new IllegalArgumentException("Department with code already exists");
+            throw new EntityExistsException("Department with code already exists");
         }
         Department createDepartment = convertToEntity(departmentDto);
         departmentDao.save(createDepartment);
