@@ -1,9 +1,14 @@
 package com.learn.javaweb.resource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.learn.javaweb.dto.DepartmentDto;
+import com.learn.javaweb.mapper.DepartmentMapper;
 import com.learn.javaweb.service.DepartmentService;
+import com.learn.javaweb.util.ExceptionUtils;
+import com.learn.webapp.invoker.ApiException;
+import com.learn.webapp.resource.DepartmentApi;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -16,12 +21,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.persistence.EntityExistsException;
 import javax.validation.ConstraintViolationException;
 
 @Path("/department")
 @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
 @Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
-public class DepartmentResource {
+public class DepartmentResource extends DepartmentApi {
     private final DepartmentService departmentService;
 
     public DepartmentResource() {
@@ -29,104 +35,95 @@ public class DepartmentResource {
     }
 
 	@POST
-	public Response createDepartment(DepartmentDto departmentDto) {
+	@Override
+	public com.learn.webapp.dto.DepartmentDto createDepartment(com.learn.webapp.dto.DepartmentDto departmentDto) throws ApiException {
         try {
-			DepartmentDto createdDepartment = departmentService.createDepartment(departmentDto);
-	        return Response.status(Response.Status.CREATED)
-	                       .entity(createdDepartment)
-	                       .build();
-        } catch (ConstraintViolationException | IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(e.getMessage())
-                    .build();
+			DepartmentDto createdDepartment = departmentService.createDepartment(DepartmentMapper.toInternalDepartmentDto(departmentDto));
+	        return DepartmentMapper.toApiDepartmentDto(createdDepartment);
+        } catch (ConstraintViolationException e) {
+            throw ExceptionUtils.toApiException(e, Response.Status.BAD_REQUEST.getStatusCode());
+        } catch (EntityExistsException e) {
+        	throw ExceptionUtils.toApiException(e, Response.Status.CONFLICT.getStatusCode());
         } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                           .entity("Failed to create department").build();
+        	throw ExceptionUtils.toApiException(e, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
 	}
 
 	@GET
-	public Response getAllDepartments() {
+	@Override
+	public List<com.learn.webapp.dto.DepartmentDto> getAllDepartments() throws ApiException {
         try {
             List<DepartmentDto> departmentsList = departmentService.getAllDepartments();
-            return Response.ok(departmentsList).build();
+            List<com.learn.webapp.dto.DepartmentDto> apiDepartmentDtos = new ArrayList<>();
+            for (DepartmentDto internalDto : departmentsList) {
+            	com.learn.webapp.dto.DepartmentDto apiDto = DepartmentMapper.toApiDepartmentDto(internalDto);
+            	apiDepartmentDtos.add(apiDto);
+            }
+            return apiDepartmentDtos;
         } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                           .entity("Failed to fetch departments").build();
+        	throw ExceptionUtils.toApiException(e, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
 	}
 	
 	@GET
+	@Override
 	@Path("/id/{id}")
-	public Response getDepartmentById(@PathParam("id") int id) {
+	public com.learn.webapp.dto.DepartmentDto getDepartmentById(@PathParam("id") Integer id) throws ApiException {
         try {
 			DepartmentDto departmentDto = departmentService.getDepartmentById(id);
-	        return Response.ok(departmentDto).build();
+	        return DepartmentMapper.toApiDepartmentDto(departmentDto);
+        } catch (ConstraintViolationException e) {
+            throw ExceptionUtils.toApiException(e, Response.Status.BAD_REQUEST.getStatusCode());
         } catch (NotFoundException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(e.getMessage())
-                    .build();
+        	throw ExceptionUtils.toApiException(e, Response.Status.NOT_FOUND.getStatusCode());
         } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                           .entity("Failed to get department").build();
+        	throw ExceptionUtils.toApiException(e, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
 	}
 	
 	@GET
+	@Override
 	@Path("/code/{code}")
-	public Response getDepartmentById(@PathParam("code") String code) {
+	public com.learn.webapp.dto.DepartmentDto getDepartmentByCode(@PathParam("code") String code) throws ApiException {
         try {
 			DepartmentDto departmentDto = departmentService.getDepartmentByCode(code);
-	        return Response.ok(departmentDto).build();
+	        return DepartmentMapper.toApiDepartmentDto(departmentDto);
+        } catch (ConstraintViolationException e) {
+            throw ExceptionUtils.toApiException(e, Response.Status.BAD_REQUEST.getStatusCode());
         } catch (NotFoundException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(e.getMessage())
-                    .build();
+        	throw ExceptionUtils.toApiException(e, Response.Status.NOT_FOUND.getStatusCode());
         } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                           .entity("Failed to get department").build();
+        	throw ExceptionUtils.toApiException(e, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
 	}
 	
 	@PUT
+	@Override
 	@Path("/{id}")
-	public Response updateDepartment(@PathParam("id") int id, DepartmentDto departmentDto) {
+	public void updateDepartment(@PathParam("id") Integer id, com.learn.webapp.dto.DepartmentDto departmentDto) throws ApiException {
         try {
-        	departmentService.updateDepartment(id, departmentDto);
-            return Response.ok("Department updated successfully").build();
+        	departmentService.updateDepartment(id, DepartmentMapper.toInternalDepartmentDto(departmentDto));
         } catch (ConstraintViolationException e) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(e.getMessage())
-                    .build();
+            throw ExceptionUtils.toApiException(e, Response.Status.BAD_REQUEST.getStatusCode());
         } catch (NotFoundException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                           .entity(e.getMessage())
-                           .build();
-        }catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                           .entity("Failed to update department").build();
+        	throw ExceptionUtils.toApiException(e, Response.Status.NOT_FOUND.getStatusCode());
+        } catch (Exception e) {
+        	throw ExceptionUtils.toApiException(e, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
 	}
 	
 	@DELETE
+	@Override
 	@Path("/{id}")
-	public Response deleteDepartment(@PathParam("id") int id) {
+	public void deleteDepartment(@PathParam("id") Integer id) throws ApiException {
         try {
         	departmentService.deleteDepartmentById(id);
-            return Response.noContent().build();
+        } catch (ConstraintViolationException e) {
+            throw ExceptionUtils.toApiException(e, Response.Status.BAD_REQUEST.getStatusCode());
         } catch (NotFoundException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                           .entity(e.getMessage())
-                           .build();
+        	throw ExceptionUtils.toApiException(e, Response.Status.NOT_FOUND.getStatusCode());
         } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-            				.entity("Failed to delete department").build();
+        	throw ExceptionUtils.toApiException(e, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
 	}
 }
